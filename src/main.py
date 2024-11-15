@@ -4,7 +4,7 @@ from routes import base, data
 from helpers.config import get_settings
 from motor.motor_asyncio import AsyncIOMotorClient
 
-app = FastAPI()
+app = FastAPI(title="Mini RAG")
 
 @app.on_event("startup")
 async def startup_db_client():
