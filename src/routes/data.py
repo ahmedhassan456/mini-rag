@@ -9,7 +9,9 @@ import logging
 from .schemes.data import ProcessRequest
 from models.ProjectModel import ProjectModel
 from models.ChunkModel import ChunkModel
-from models.db_schemes import DataChunk
+from models.AssetModel import AssetModel
+from models.db_schemes import DataChunk, Asset
+from models.enums.AssetTypeEnum import AssetTypeEnum
 
 logger = logging.getLogger("uvicorn.error")
 
@@ -65,11 +67,25 @@ async def upload_file(request: Request, project_id: str, file: UploadFile,
                 "signal": result_signal,
             }
         )
+    
+    asset_model = await AssetModel.create_instance(
+        db_client=request.app.db_client
+    )
+
+    asset_resource = Asset(
+        asset_project_id=project.id,
+        asset_type=AssetTypeEnum.FILE.value,
+        asset_name=file.filename,
+        asset_size=os.path.getsize(file_path)
+    )
+
+    asset_record = await asset_model.create_asset(asset=asset_resource)
 
     return JSONResponse(
         content={
             "result": "success",
             "signal": ResponseSignal.File_UPLOAD_SUCCESS.value,
+            "file_id": str(asset_record.id),
         }
     )
 
